@@ -105,11 +105,14 @@ pub fn init(config: LoggerConfig) {
         tracing_opentelemetry::layer().with_tracer(tt)
     });
 
+    let metrics_layer = super::metrics_layer::MetricsLayer;
+
     // Register all layers - with() accepts Option<Layer> so this scales cleanly
     tracing_subscriber::registry()
         .with(stdout_sub)
         .with(file_layer)
         .with(otel_layer)
+        .with(metrics_layer)
         .init();
 
     info!(

@@ -98,6 +98,15 @@ fn main() -> Result<()> {
         None
     };
 
+    // Start Prometheus metrics endpoint if configured.
+    if let Some(port) = config.logging.metrics_port {
+        metrics_exporter_prometheus::PrometheusBuilder::new()
+            .with_http_listener(([0, 0, 0, 0], port))
+            .install()
+            .expect("failed to install Prometheus metrics exporter");
+        info!(%port, "Prometheus metrics endpoint started");
+    }
+
     // Monitor tasks.
     runctx.task_manager.start_signal_listeners();
     runctx.task_manager.monitor(Some(Duration::from_secs(5)))?;

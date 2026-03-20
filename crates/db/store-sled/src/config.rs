@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::Instant};
 
 use sled::transaction::ConflictableTransactionResult;
 use strata_db_types::DbResult;
@@ -62,8 +62,12 @@ impl SledDbConfig {
         Trees: SledTransactional,
         F: Fn(Trees::View) -> ConflictableTransactionResult<R, Error>,
     {
-        trees
+        let start = Instant::now();
+        let result = trees
             .transaction_with_retry(self.backoff.as_ref(), self.retry_count.into(), f)
-            .map_err(to_db_error)
+            .map_err(to_db_error);
+        metrics::histogram!("alpen_db_transaction_duration_seconds")
+            .record(start.elapsed().as_secs_f64());
+        result
     }
 }

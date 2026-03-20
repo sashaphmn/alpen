@@ -9,6 +9,7 @@ workspace = true
 [dependencies]
 deadpool.workspace = true
 jsonrpsee = { workspace = true, features = ["client"] }
+metrics.workspace = true
 opentelemetry.workspace = true
 opentelemetry-otlp.workspace = true
 opentelemetry_sdk.workspace = true

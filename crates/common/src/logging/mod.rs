@@ -1,6 +1,7 @@
 //! Logging subsystem with OpenTelemetry support.
 
 pub mod manager;
+pub mod metrics_layer;
 pub mod service;
 pub mod types;
 

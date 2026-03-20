@@ -23,6 +23,8 @@ strata-state.workspace = true
 typed-sled.workspace = true
 zkaleido.workspace = true
 
+metrics.workspace = true
+
 anyhow.workspace = true
 bincode.workspace = true
 borsh.workspace = true

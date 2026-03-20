@@ -7035,11 +7035,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dd7399781913e5393588a8d8c6a2867bf85fb38eaf2502fdce465aad2dc6f034"
 dependencies = [
  "base64 0.22.1",
+ "http-body-util",
+ "hyper 1.8.1",
+ "hyper-rustls 0.27.7",
+ "hyper-util",
  "indexmap 2.13.0",
+ "ipnet",
  "metrics",
  "metrics-util",
  "quanta",
  "thiserror 1.0.69",
+ "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -13848,6 +13855,7 @@ dependencies = [
  "bitcoind-async-client",
  "format_serde_error",
  "jsonrpsee",
+ "metrics-exporter-prometheus",
  "serde_json",
  "ssz",
  "strata-asm-common",
@@ -14269,6 +14277,7 @@ dependencies = [
  "bitcoin",
  "bitcoind-async-client",
  "corepc-node",
+ "metrics",
  "serde",
  "strata-asm-common",
  "strata-asm-manifest-types",
@@ -14588,6 +14597,7 @@ version = "0.3.0-alpha.1"
 dependencies = [
  "deadpool",
  "jsonrpsee",
+ "metrics",
  "opentelemetry 0.26.0",
  "opentelemetry-otlp 0.26.0",
  "opentelemetry_sdk 0.26.0",
@@ -14616,6 +14626,7 @@ dependencies = [
  "bitcoin",
  "bitcoind-async-client",
  "borsh",
+ "metrics",
  "rand 0.8.5",
  "serde",
  "strata-asm-common",
@@ -14773,6 +14784,7 @@ dependencies = [
  "anyhow",
  "bincode",
  "borsh",
+ "metrics",
  "proptest",
  "rkyv",
  "sled",
@@ -16074,6 +16086,7 @@ dependencies = [
  "async-trait",
  "borsh",
  "futures",
+ "metrics",
  "strata-common",
  "strata-consensus-logic",
  "strata-db-types",

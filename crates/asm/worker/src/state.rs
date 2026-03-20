@@ -148,6 +148,7 @@ impl<W: WorkerContext + Send + Sync + 'static, S: AsmSpec + Send + Sync + 'stati
     pub(crate) fn update_anchor_state(&mut self, anchor: AsmState, blkid: L1BlockCommitment) {
         self.initialized = true;
         self.anchor = Some(anchor);
+        metrics::gauge!("alpen_l1_tip_height").set(blkid.height() as f64);
         self.blkid = Some(blkid);
     }
 }

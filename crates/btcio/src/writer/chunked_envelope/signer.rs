@@ -91,6 +91,7 @@ pub(crate) async fn sign_chunked_envelope<R: Reader + Signer + Wallet>(
             network,
             fee_rate,
             BITCOIN_DUST_LIMIT,
+            None,
         );
 
         let built = build_chunked_envelope_txs(

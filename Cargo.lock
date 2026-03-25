@@ -13833,7 +13833,6 @@ dependencies = [
  "strata-db-store-sled",
  "strata-db-types",
  "strata-identifiers",
- "strata-key-derivation",
  "strata-ledger-types",
  "strata-node-context",
  "strata-ol-block-assembly",
@@ -13859,7 +13858,6 @@ dependencies = [
  "tokio",
  "toml 0.5.11",
  "tracing",
- "zeroize",
 ]
 
 [[package]]
@@ -15899,6 +15897,7 @@ dependencies = [
  "argh",
  "bitcoin",
  "jsonrpsee",
+ "rand 0.8.5",
  "serde",
  "strata-common",
  "strata-crypto",

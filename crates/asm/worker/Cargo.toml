@@ -19,11 +19,10 @@ strata-service.workspace = true
 strata-state.workspace = true
 strata-tasks.workspace = true
 
-metrics.workspace = true
-
 anyhow.workspace = true
 async-trait.workspace = true
 bitcoin.workspace = true
+metrics.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 tracing.workspace = true

@@ -41,12 +41,11 @@ strata-storage.workspace = true
 strata-tasks.workspace = true
 zkaleido.workspace = true
 
-metrics.workspace = true
-
 anyhow.workspace = true
 bitcoin.workspace = true
 bitcoind-async-client.workspace = true
 borsh.workspace = true
+metrics.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 tokio.workspace = true

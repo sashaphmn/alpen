@@ -16,7 +16,7 @@ use tracing::*;
 use tracing_appender::rolling::RollingFileAppender;
 use tracing_subscriber::{fmt::layer, layer::SubscriberExt, util::SubscriberInitExt, Layer};
 
-use super::types::LoggerConfig;
+use super::{metrics_layer::MetricsLayer, types::LoggerConfig};
 
 /// Global tracer provider for proper shutdown
 static TRACER_PROVIDER: OnceLock<SdkTracerProvider> = OnceLock::new();
@@ -105,7 +105,7 @@ pub fn init(config: LoggerConfig) {
         tracing_opentelemetry::layer().with_tracer(tt)
     });
 
-    let metrics_layer = super::metrics_layer::MetricsLayer;
+    let metrics_layer = MetricsLayer;
 
     // Register all layers - with() accepts Option<Layer> so this scales cleanly
     tracing_subscriber::registry()

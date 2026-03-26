@@ -14784,7 +14784,6 @@ dependencies = [
  "anyhow",
  "bincode",
  "borsh",
- "metrics",
  "proptest",
  "rkyv",
  "sled",

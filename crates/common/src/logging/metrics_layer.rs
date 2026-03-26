@@ -6,14 +6,15 @@ use tracing_subscriber::{layer::Context, registry::LookupSpan, Layer};
 struct SpanTiming {
     created_at: Instant,
     busy: Duration,
-    last_entered: Option<Instant>,
+    last_entered: Instant,
 }
 
 /// A tracing [`Layer`] that records span busy/idle time as `metrics` histograms.
 ///
 /// For every span that closes, it records:
-/// - `alpen_span_busy_seconds{span="<name>"}` — time the span was actively executing
-/// - `alpen_span_idle_seconds{span="<name>"}` — time the span existed but was not executing
+/// - `strata_span_busy_us{span="<name>"}` — time the span was actively executing (microseconds)
+/// - `strata_span_idle_us{span="<name>"}` — time the span existed but was not executing
+///   (microseconds)
 ///
 /// These are no-ops if no `metrics` recorder is installed.
 #[derive(Debug)]
@@ -26,11 +27,12 @@ impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for MetricsLayer {
         id: &tracing::span::Id,
         ctx: Context<'_, S>,
     ) {
+        let now = Instant::now();
         if let Some(span) = ctx.span(id) {
             span.extensions_mut().insert(SpanTiming {
-                created_at: Instant::now(),
+                created_at: now,
                 busy: Duration::ZERO,
-                last_entered: None,
+                last_entered: now,
             });
         }
     }
@@ -38,7 +40,7 @@ impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for MetricsLayer {
     fn on_enter(&self, id: &tracing::span::Id, ctx: Context<'_, S>) {
         if let Some(span) = ctx.span(id) {
             if let Some(timing) = span.extensions_mut().get_mut::<SpanTiming>() {
-                timing.last_entered = Some(Instant::now());
+                timing.last_entered = Instant::now();
             }
         }
     }
@@ -46,9 +48,7 @@ impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for MetricsLayer {
     fn on_exit(&self, id: &tracing::span::Id, ctx: Context<'_, S>) {
         if let Some(span) = ctx.span(id) {
             if let Some(timing) = span.extensions_mut().get_mut::<SpanTiming>() {
-                if let Some(entered) = timing.last_entered.take() {
-                    timing.busy += entered.elapsed();
-                }
+                timing.busy += timing.last_entered.elapsed();
             }
         }
     }
@@ -61,10 +61,10 @@ impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for MetricsLayer {
                 let busy = timing.busy;
                 let idle = total.saturating_sub(busy);
 
-                metrics::histogram!("alpen_span_busy_seconds", "span" => name.to_string())
-                    .record(busy.as_secs_f64());
-                metrics::histogram!("alpen_span_idle_seconds", "span" => name.to_string())
-                    .record(idle.as_secs_f64());
+                metrics::histogram!("strata_span_busy_us", "span" => name.to_string())
+                    .record(busy.as_micros() as f64);
+                metrics::histogram!("strata_span_idle_us", "span" => name.to_string())
+                    .record(idle.as_micros() as f64);
             }
         }
     }

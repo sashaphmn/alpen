@@ -23,6 +23,7 @@ pub use managers::{
     ol::OLBlockManager,
     ol_checkpoint::OLCheckpointManager,
     ol_state::OLStateManager,
+    writer::L1WriterManager,
 };
 pub use ops::l1tx_broadcast::BroadcastDbOps;
 use strata_db_store_sled::SledBackend;
@@ -61,6 +62,7 @@ pub struct NodeStorage {
     mempool_db_manager: Arc<MempoolDbManager>,
     ol_state_manager: Arc<OLStateManager>,
     ol_checkpoint_manager: Arc<OLCheckpointManager>,
+    l1_writer_manager: Arc<L1WriterManager>,
 }
 
 impl Clone for NodeStorage {
@@ -80,6 +82,7 @@ impl Clone for NodeStorage {
             mempool_db_manager: self.mempool_db_manager.clone(),
             ol_state_manager: self.ol_state_manager.clone(),
             ol_checkpoint_manager: self.ol_checkpoint_manager.clone(),
+            l1_writer_manager: self.l1_writer_manager.clone(),
         }
     }
 }
@@ -146,6 +149,10 @@ impl NodeStorage {
     pub fn ol_checkpoint(&self) -> &Arc<OLCheckpointManager> {
         &self.ol_checkpoint_manager
     }
+
+    pub fn l1_writer(&self) -> &Arc<L1WriterManager> {
+        &self.l1_writer_manager
+    }
 }
 
 /// Given a raw database, creates storage managers and returns a [`NodeStorage`]
@@ -189,6 +196,7 @@ pub fn create_node_storage(
     let mempool_db_manager = Arc::new(MempoolDbManager::new(pool.clone(), mempool_db));
     let ol_state_manager = Arc::new(OLStateManager::new(pool.clone(), ol_state_db.clone()));
     let ol_checkpoint_manager = Arc::new(OLCheckpointManager::new(pool.clone(), ol_checkpoint_db));
+    let l1_writer_manager = Arc::new(L1WriterManager::new(pool.clone(), db.writer_db()));
 
     Ok(NodeStorage {
         db,
@@ -205,5 +213,6 @@ pub fn create_node_storage(
         mempool_db_manager,
         ol_state_manager,
         ol_checkpoint_manager,
+        l1_writer_manager,
     })
 }

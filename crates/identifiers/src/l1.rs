@@ -120,6 +120,34 @@ impl PartialOrd for L1BlockCommitment {
     }
 }
 
+/// Represents a reference to a transaction in bitcoin.
+#[derive(
+    Debug, Clone, Eq, PartialEq, Arbitrary, BorshDeserialize, BorshSerialize, Deserialize, Serialize,
+)]
+pub struct CheckpointL1Ref {
+    pub l1_commitment: L1BlockCommitment,
+    pub txid: Buf32,
+    pub wtxid: Buf32,
+}
+
+impl CheckpointL1Ref {
+    pub fn new(l1_commitment: L1BlockCommitment, txid: Buf32, wtxid: Buf32) -> Self {
+        Self {
+            l1_commitment,
+            txid,
+            wtxid,
+        }
+    }
+
+    pub fn block_height(&self) -> L1Height {
+        self.l1_commitment.height()
+    }
+
+    pub fn block_id(&self) -> &L1BlockId {
+        self.l1_commitment.blkid()
+    }
+}
+
 #[cfg(all(test, feature = "ssz"))]
 mod tests {
     use strata_test_utils_ssz::ssz_proptest;

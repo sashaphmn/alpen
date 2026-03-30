@@ -3,9 +3,10 @@
 use ssz_primitives::FixedBytes;
 use ssz_types::VariableList;
 use strata_identifiers::{
-    Buf32, Epoch, OLBlockCommitment, OLBlockId, impl_borsh_via_ssz, impl_borsh_via_ssz_fixed,
+    Buf32, Epoch, EpochCommitment, OLBlockCommitment, OLBlockId, Slot, impl_borsh_via_ssz,
+    impl_borsh_via_ssz_fixed,
 };
-use strata_ol_chain_types_new::{OLBlockHeader, OLLog};
+use strata_ol_chain_types_new::{BlockFlags, OLBlockHeader, OLLog};
 use tree_hash::{Sha256Hasher, TreeHash};
 
 use crate::{
@@ -89,6 +90,21 @@ impl TerminalHeaderComplement {
     /// Computes the SSZ tree hash root of this complement.
     pub fn compute_hash(&self) -> FixedBytes<32> {
         FixedBytes::<32>::from(TreeHash::<Sha256Hasher>::tree_hash_root(self).0)
+    }
+
+    /// Creates an `OLBlockHeader`.
+    pub fn to_full_header(&self, epoch: EpochCommitment, state_root: Buf32) -> OLBlockHeader {
+        // TODO: recheck the logic here
+        OLBlockHeader {
+            timestamp: self.timestamp(),
+            flags: BlockFlags::terminal(),
+            slot: epoch.last_slot,
+            epoch: epoch.epoch,
+            parent_blkid: *self.parent_blkid(),
+            body_root: *self.body_root(),
+            state_root,
+            logs_root: *self.logs_root(),
+        }
     }
 }
 

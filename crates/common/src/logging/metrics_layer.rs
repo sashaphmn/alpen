@@ -1,6 +1,9 @@
 use std::time::{Duration, Instant};
 
-use tracing::Subscriber;
+use tracing::{
+    span::{Attributes, Id},
+    Subscriber,
+};
 use tracing_subscriber::{layer::Context, registry::LookupSpan, Layer};
 
 struct SpanTiming {
@@ -21,12 +24,7 @@ struct SpanTiming {
 pub struct MetricsLayer;
 
 impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for MetricsLayer {
-    fn on_new_span(
-        &self,
-        _attrs: &tracing::span::Attributes<'_>,
-        id: &tracing::span::Id,
-        ctx: Context<'_, S>,
-    ) {
+    fn on_new_span(&self, _attrs: &Attributes<'_>, id: &Id, ctx: Context<'_, S>) {
         let now = Instant::now();
         if let Some(span) = ctx.span(id) {
             span.extensions_mut().insert(SpanTiming {
@@ -37,7 +35,7 @@ impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for MetricsLayer {
         }
     }
 
-    fn on_enter(&self, id: &tracing::span::Id, ctx: Context<'_, S>) {
+    fn on_enter(&self, id: &Id, ctx: Context<'_, S>) {
         if let Some(span) = ctx.span(id) {
             if let Some(timing) = span.extensions_mut().get_mut::<SpanTiming>() {
                 timing.last_entered = Instant::now();
@@ -45,7 +43,7 @@ impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for MetricsLayer {
         }
     }
 
-    fn on_exit(&self, id: &tracing::span::Id, ctx: Context<'_, S>) {
+    fn on_exit(&self, id: &Id, ctx: Context<'_, S>) {
         if let Some(span) = ctx.span(id) {
             if let Some(timing) = span.extensions_mut().get_mut::<SpanTiming>() {
                 timing.busy += timing.last_entered.elapsed();
@@ -53,7 +51,7 @@ impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for MetricsLayer {
         }
     }
 
-    fn on_close(&self, id: tracing::span::Id, ctx: Context<'_, S>) {
+    fn on_close(&self, id: Id, ctx: Context<'_, S>) {
         if let Some(span) = ctx.span(&id) {
             if let Some(timing) = span.extensions().get::<SpanTiming>() {
                 let total = timing.created_at.elapsed();

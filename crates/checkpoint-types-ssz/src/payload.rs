@@ -3,7 +3,7 @@
 use ssz_primitives::FixedBytes;
 use ssz_types::VariableList;
 use strata_identifiers::{
-    Buf32, Epoch, EpochCommitment, OLBlockCommitment, OLBlockId, Slot, impl_borsh_via_ssz,
+    Buf32, Epoch, EpochCommitment, OLBlockCommitment, OLBlockId, impl_borsh_via_ssz,
     impl_borsh_via_ssz_fixed,
 };
 use strata_ol_chain_types_new::{BlockFlags, OLBlockHeader, OLLog};
@@ -97,7 +97,7 @@ impl TerminalHeaderComplement {
         // TODO: recheck the logic here
         OLBlockHeader {
             timestamp: self.timestamp(),
-            flags: BlockFlags::terminal(),
+            flags: BlockFlags::new_terminal(),
             slot: epoch.last_slot,
             epoch: epoch.epoch,
             parent_blkid: *self.parent_blkid(),

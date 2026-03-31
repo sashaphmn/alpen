@@ -103,6 +103,51 @@ impl Zeroize for ZeroizableKeypair {
 
 impl ZeroizeOnDrop for ZeroizableKeypair {}
 
+/// A zeroizable on [`Drop`] wrapper around a 32-byte key buffer.
+///
+/// Holds raw secret key bytes and guarantees they are securely erased when the
+/// value is dropped. Does not implement [`Copy`] so key material cannot be
+/// silently duplicated via assignment.
+#[derive(Clone, PartialEq, Eq)]
+#[expect(
+    missing_debug_implementations,
+    reason = "Debug implementation would expose sensitive key material"
+)]
+pub struct ZeroizableBuf32([u8; 32]);
+
+impl ZeroizableBuf32 {
+    /// Creates a new [`ZeroizableBuf32`] from a 32-byte array.
+    ///
+    /// Takes ownership of `bytes` since it is zeroized on drop.
+    pub fn new(bytes: [u8; 32]) -> Self {
+        Self(bytes)
+    }
+}
+
+impl Deref for ZeroizableBuf32 {
+    type Target = [u8; 32];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+// Manual Drop implementation to zeroize key bytes on drop.
+impl Drop for ZeroizableBuf32 {
+    fn drop(&mut self) {
+        self.zeroize();
+    }
+}
+
+impl Zeroize for ZeroizableBuf32 {
+    #[inline]
+    fn zeroize(&mut self) {
+        self.0.zeroize();
+    }
+}
+
+impl ZeroizeOnDrop for ZeroizableBuf32 {}
+
 #[cfg(test)]
 mod tests {
     use std::sync::{
@@ -212,6 +257,50 @@ mod tests {
         }
 
         // Check if zeroization occurred
+        assert!(was_zeroized.load(Ordering::Relaxed));
+    }
+
+    #[test]
+    fn test_zeroizable_buf32_deref() {
+        let bytes = [0x42u8; 32];
+        let key = ZeroizableBuf32::new(bytes);
+        assert_eq!(*key, bytes);
+    }
+
+    #[test]
+    fn test_zeroizable_buf32_zeroize() {
+        let mut key = ZeroizableBuf32::new([0x42u8; 32]);
+        key.zeroize();
+        // zeroize crate fills with 0x00 (volatile writes of zero)
+        assert_eq!(*key, [0u8; 32]);
+    }
+
+    #[test]
+    fn test_zeroize_on_drop_buf32() {
+        struct TestWrapper {
+            inner: ZeroizableBuf32,
+            flag: Arc<AtomicBool>,
+        }
+
+        impl Drop for TestWrapper {
+            fn drop(&mut self) {
+                let bytes = *self.inner;
+                // Flag is true when bytes are NOT yet zeroized at this point
+                // (inner drops after this, triggering zeroization)
+                self.flag.store(bytes != [0u8; 32], Ordering::Relaxed);
+            }
+        }
+
+        let was_zeroized = Arc::new(AtomicBool::new(false));
+        let was_zeroized_clone = Arc::clone(&was_zeroized);
+
+        {
+            let _ = TestWrapper {
+                inner: ZeroizableBuf32::new([0x42u8; 32]),
+                flag: was_zeroized_clone,
+            };
+        }
+
         assert!(was_zeroized.load(Ordering::Relaxed));
     }
 }

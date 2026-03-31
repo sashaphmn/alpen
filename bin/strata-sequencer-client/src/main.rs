@@ -100,5 +100,6 @@ fn init_logging(rt: &Handle, config: &Config) {
         log_file_prefix: config.logging.log_file_prefix.as_deref(),
         json_format: config.logging.json_format,
         default_log_prefix: "alpen",
+        enable_metrics_layer: false,
     });
 }

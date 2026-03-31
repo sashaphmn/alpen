@@ -47,8 +47,21 @@ fn main() -> Result<()> {
         .build()
         .map_err(InitError::RuntimeBuild)?;
 
-    // Initialize logging
+    // Install Prometheus metrics recorder before logging so the MetricsLayer
+    // can record from the very first spans.
+    if let Some(port) = config.logging.metrics_port {
+        metrics_exporter_prometheus::PrometheusBuilder::new()
+            .with_http_listener(([0, 0, 0, 0], port))
+            .install()
+            .expect("failed to install Prometheus metrics exporter");
+    }
+
+    // Initialize logging (MetricsLayer is only added when a recorder is installed).
     init_logging(rt.handle(), &config);
+
+    if config.logging.metrics_port.is_some() {
+        info!("Prometheus metrics endpoint started");
+    }
 
     // Validate sequencer flag isn't used when sequencer feature is disabled.
     #[cfg(not(feature = "sequencer"))]
@@ -98,15 +111,6 @@ fn main() -> Result<()> {
         None
     };
 
-    // Start Prometheus metrics endpoint if configured.
-    if let Some(port) = config.logging.metrics_port {
-        metrics_exporter_prometheus::PrometheusBuilder::new()
-            .with_http_listener(([0, 0, 0, 0], port))
-            .install()
-            .expect("failed to install Prometheus metrics exporter");
-        info!(%port, "Prometheus metrics endpoint started");
-    }
-
     // Monitor tasks.
     runctx.task_manager.start_signal_listeners();
     runctx.task_manager.monitor(Some(Duration::from_secs(5)))?;
@@ -126,5 +130,6 @@ fn init_logging(rt: &Handle, config: &strata_config::Config) {
         log_file_prefix: config.logging.log_file_prefix.as_deref(),
         json_format: config.logging.json_format,
         default_log_prefix: "alpen",
+        enable_metrics_layer: config.logging.metrics_port.is_some(),
     });
 }

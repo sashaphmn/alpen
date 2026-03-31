@@ -63,6 +63,7 @@ fn main_inner(args: Args) -> anyhow::Result<()> {
         log_file_prefix: base_config.logging.log_file_prefix.as_deref(),
         json_format: base_config.logging.json_format,
         default_log_prefix: "alpen",
+        enable_metrics_layer: false,
     });
 
     // Resolve configuration from TOML file and CLI arguments

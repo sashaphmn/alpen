@@ -55,15 +55,15 @@ impl<S: Subscriber + for<'a> LookupSpan<'a>> Layer<S> for MetricsLayer {
 
     fn on_close(&self, id: tracing::span::Id, ctx: Context<'_, S>) {
         if let Some(span) = ctx.span(&id) {
-            let name = span.name();
             if let Some(timing) = span.extensions().get::<SpanTiming>() {
                 let total = timing.created_at.elapsed();
                 let busy = timing.busy;
                 let idle = total.saturating_sub(busy);
+                let name = span.name().to_string();
 
-                metrics::histogram!("strata_span_busy_us", "span" => name.to_string())
+                metrics::histogram!("strata_span_busy_us", "span" => name.clone())
                     .record(busy.as_micros() as f64);
-                metrics::histogram!("strata_span_idle_us", "span" => name.to_string())
+                metrics::histogram!("strata_span_idle_us", "span" => name)
                     .record(idle.as_micros() as f64);
             }
         }

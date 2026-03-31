@@ -147,6 +147,8 @@ pub struct LoggerConfig {
     pub file_logging_config: Option<FileLoggingConfig>,
     /// OTLP export configuration
     pub otlp_export_config: OtlpExportConfig,
+    /// Whether to install the tracing-to-metrics bridge layer.
+    pub enable_metrics_layer: bool,
 }
 
 impl LoggerConfig {
@@ -158,6 +160,7 @@ impl LoggerConfig {
             stdout_config: StdoutConfig::default(),
             file_logging_config: None,
             otlp_export_config: OtlpExportConfig::default(),
+            enable_metrics_layer: false,
         }
     }
 

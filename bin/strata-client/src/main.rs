@@ -215,6 +215,8 @@ fn init_logging(rt: &Handle, config: &Config) {
         log_file_prefix: config.logging.log_file_prefix.as_deref(),
         json_format: config.logging.json_format,
         default_log_prefix: "strata-client",
+        // Reth installs its own metrics recorder when --metrics is passed.
+        enable_metrics_layer: true,
     });
 }
 

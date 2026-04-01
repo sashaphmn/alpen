@@ -1,17 +1,12 @@
 //! In-memory task store. Default for tests and dev.
 
-use std::{
-    collections::HashMap,
-    sync::RwLock,
-    time::SystemTime,
-};
+use std::{collections::HashMap, sync::RwLock, time::SystemTime};
 
+use super::traits::{TaskRecord, TaskStore};
 use crate::{
     error::{ProverError, ProverResult},
     task::TaskStatus,
 };
-
-use super::traits::{TaskRecord, TaskStore};
 
 #[derive(Debug, Default)]
 pub struct InMemoryTaskStore {

@@ -4,12 +4,11 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use borsh::{BorshDeserialize, BorshSerialize};
 
+use super::traits::{TaskRecord, TaskStore};
 use crate::{
     error::{ProverError, ProverResult},
     task::TaskStatus,
 };
-
-use super::traits::{TaskRecord, TaskStore};
 
 /// Serializable form of [`TaskRecord`] for sled storage.
 #[derive(BorshSerialize, BorshDeserialize)]
@@ -33,7 +32,7 @@ impl StoredRecord {
         }
     }
 
-    fn to_record(self, uuid: String) -> TaskRecord {
+    fn into_record(self, uuid: String) -> TaskRecord {
         let mut r = TaskRecord::new(uuid, self.status);
         if let Some(secs) = self.retry_after_secs {
             r.set_retry_after(Some(secs_to_system_time(secs)));
@@ -112,11 +111,15 @@ impl TaskStore for SledTaskStore {
         self.get_stored(uuid)
             .ok()
             .flatten()
-            .map(|r| r.to_record(uuid.to_string()))
+            .map(|r| r.into_record(uuid.to_string()))
     }
 
     fn insert(&self, record: TaskRecord) -> ProverResult<()> {
-        if self.tree.contains_key(record.uuid().as_bytes()).unwrap_or(false) {
+        if self
+            .tree
+            .contains_key(record.uuid().as_bytes())
+            .unwrap_or(false)
+        {
             return Err(ProverError::TaskAlreadyExists(record.uuid().to_string()));
         }
         let stored = StoredRecord::from_record(&record);
@@ -148,7 +151,7 @@ impl TaskStore for SledTaskStore {
                 if record.status.is_retriable()
                     && record.retry_after_secs.is_some_and(|t| t <= now_secs)
                 {
-                    Some(record.to_record(uuid))
+                    Some(record.into_record(uuid))
                 } else {
                     None
                 }
@@ -164,7 +167,7 @@ impl TaskStore for SledTaskStore {
                 let uuid = String::from_utf8(key.to_vec()).ok()?;
                 let record: StoredRecord = borsh::from_slice(&val).ok()?;
                 if record.status.is_in_progress() {
-                    Some(record.to_record(uuid))
+                    Some(record.into_record(uuid))
                 } else {
                     None
                 }

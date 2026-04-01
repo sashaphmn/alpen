@@ -1,9 +1,9 @@
 //! Consumer-facing handle wrapping the SF command channel.
 
-use std::sync::Arc;
+use std::{fmt, sync::Arc};
 
 use strata_prover_core::{
-    ProofSpec, ProofReceiptWithMetadata, Prover, ProverError, ProverResult, TaskResult,
+    ProofReceiptWithMetadata, ProofSpec, Prover, ProverError, ProverResult, TaskResult,
 };
 use strata_service::{CommandHandle, ServiceMonitor};
 
@@ -17,13 +17,13 @@ use crate::service::{Cmd, ProverServiceStatus};
 #[derive(Clone)]
 pub struct ProverHandle<H: ProofSpec> {
     cmd: Arc<CommandHandle<Cmd<H::Task>>>,
-    #[allow(dead_code)]
+    #[expect(dead_code, reason = "monitor held for future health check API")]
     monitor: ServiceMonitor<ProverServiceStatus>,
     prover: Arc<Prover<H>>,
 }
 
-impl<H: ProofSpec> std::fmt::Debug for ProverHandle<H> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<H: ProofSpec> fmt::Debug for ProverHandle<H> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ProverHandle").finish()
     }
 }

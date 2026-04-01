@@ -3,6 +3,7 @@
 
 use std::{
     collections::HashMap,
+    fmt, slice,
     sync::{
         atomic::{AtomicBool, Ordering},
         Arc,
@@ -13,12 +14,14 @@ use std::{
 use tokio::sync::{watch, RwLock};
 use tracing::{error, info, warn};
 use zkaleido::ZkVmHost;
+#[cfg(feature = "remote")]
+use zkaleido::ZkVmRemoteHost;
 
 use crate::{
     config::{ProverConfig, RetryConfig},
     error::{ProverError, ProverResult},
-    spec::ProofSpec,
     receipt::{ReceiptHook, ReceiptStore},
+    spec::ProofSpec,
     store::{InMemoryTaskStore, TaskRecord, TaskStore},
     strategy::{NativeStrategy, ProveStrategy},
     task::{TaskResult, TaskStatus},
@@ -43,8 +46,8 @@ pub struct Prover<H: ProofSpec> {
     recovered: AtomicBool,
 }
 
-impl<H: ProofSpec> std::fmt::Debug for Prover<H> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<H: ProofSpec> fmt::Debug for Prover<H> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Prover")
             .field("has_retry", &self.config.retry.is_some())
             .field("has_receipt_store", &self.receipt_store.is_some())
@@ -103,7 +106,7 @@ impl<H: ProofSpec> Prover<H> {
     /// Submit a task and block until it reaches a terminal state.
     pub async fn execute(&self, task: H::Task) -> ProverResult<TaskResult> {
         let uuid = self.submit(task).await?;
-        let results = self.wait_for_tasks(&[uuid.clone()]).await?;
+        let results = self.wait_for_tasks(slice::from_ref(&uuid)).await?;
         Ok(results.into_iter().next().expect("one result for one uuid"))
     }
 
@@ -168,7 +171,8 @@ impl<H: ProofSpec> Prover<H> {
                     Box::pin(async move { rx.changed().await })
                 })
                 .collect();
-            let _ = futures::future::select_all(futs).await;
+            use futures::future::select_all;
+            let _ = select_all(futs).await;
         }
     }
 
@@ -253,6 +257,8 @@ impl<H: ProofSpec> Prover<H> {
 
 impl<H: ProofSpec> Prover<H> {
     async fn run_task(&self, task: H::Task, uuid: String) {
+        use tokio::task::spawn_blocking;
+
         let _ = self.task_store.update_status(&uuid, TaskStatus::Queued);
         let _ = self.task_store.update_status(&uuid, TaskStatus::Proving);
 
@@ -268,7 +274,7 @@ impl<H: ProofSpec> Prover<H> {
 
         // 2. Prove (blocking — strategy handles native vs remote)
         let strategy = self.strategy.clone();
-        let prove_result = tokio::task::spawn_blocking(move || strategy.prove(&input)).await;
+        let prove_result = spawn_blocking(move || strategy.prove(&input)).await;
 
         let receipt = match prove_result {
             Ok(Ok(receipt)) => receipt,
@@ -446,37 +452,27 @@ impl<H: ProofSpec> ProverBuilder<H> {
     #[cfg(feature = "remote")]
     pub fn remote<Host>(self, host: Host) -> Prover<H>
     where
-        Host: zkaleido::ZkVmRemoteHost + Send + Sync + 'static,
+        Host: ZkVmRemoteHost + Send + Sync + 'static,
     {
-        self.build(Arc::new(crate::strategy::RemoteStrategy::new(
-            host,
-            std::time::Duration::from_secs(10),
-        )))
+        use crate::strategy::RemoteStrategy;
+        self.build(Arc::new(RemoteStrategy::new(host, Duration::from_secs(10))))
     }
 
     /// Build with a remote host and custom poll interval.
     #[cfg(feature = "remote")]
-    pub fn remote_with_interval<Host>(
-        self,
-        host: Host,
-        poll_interval: std::time::Duration,
-    ) -> Prover<H>
+    pub fn remote_with_interval<Host>(self, host: Host, poll_interval: Duration) -> Prover<H>
     where
-        Host: zkaleido::ZkVmRemoteHost + Send + Sync + 'static,
+        Host: ZkVmRemoteHost + Send + Sync + 'static,
     {
-        self.build(Arc::new(crate::strategy::RemoteStrategy::new(
-            host,
-            poll_interval,
-        )))
+        use crate::strategy::RemoteStrategy;
+        self.build(Arc::new(RemoteStrategy::new(host, poll_interval)))
     }
 
     fn build(self, strategy: Arc<dyn ProveStrategy<H>>) -> Prover<H> {
         Prover {
             spec: Arc::new(self.spec),
             strategy,
-            config: ProverConfig {
-                retry: self.retry,
-            },
+            config: ProverConfig { retry: self.retry },
             task_store: self
                 .task_store
                 .unwrap_or_else(|| Arc::new(InMemoryTaskStore::new())),
@@ -489,8 +485,8 @@ impl<H: ProofSpec> ProverBuilder<H> {
     }
 }
 
-impl<H: ProofSpec> std::fmt::Debug for ProverBuilder<H> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<H: ProofSpec> fmt::Debug for ProverBuilder<H> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ProverBuilder").finish()
     }
 }

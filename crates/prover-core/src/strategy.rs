@@ -4,6 +4,8 @@
 //! The `Host` type is captured at build time and erased via `dyn ProveStrategy<H>`.
 
 use std::sync::Arc;
+#[cfg(feature = "remote")]
+use std::time::Duration;
 
 use zkaleido::{ProofReceiptWithMetadata, ZkVmHost, ZkVmProgram};
 
@@ -57,12 +59,12 @@ where
 #[cfg(feature = "remote")]
 pub(crate) struct RemoteStrategy<Host> {
     host: Arc<Host>,
-    poll_interval: std::time::Duration,
+    poll_interval: Duration,
 }
 
 #[cfg(feature = "remote")]
 impl<Host> RemoteStrategy<Host> {
-    pub(crate) fn new(host: Host, poll_interval: std::time::Duration) -> Self {
+    pub(crate) fn new(host: Host, poll_interval: Duration) -> Self {
         Self {
             host: Arc::new(host),
             poll_interval,
@@ -80,22 +82,22 @@ where
         &self,
         input: &<H::Program as ZkVmProgram>::Input,
     ) -> ProverResult<ProofReceiptWithMetadata> {
+        use tokio::{runtime::Builder, task::LocalSet, time::sleep};
         use zkaleido::RemoteProofStatus;
 
-        let rt = tokio::runtime::Builder::new_current_thread()
+        let rt = Builder::new_current_thread()
             .enable_all()
             .build()
             .map_err(|e| ProverError::Internal(e.into()))?;
 
-        let local = tokio::task::LocalSet::new();
+        let local = LocalSet::new();
         let host = self.host.clone();
         let poll_interval = self.poll_interval;
 
         local.block_on(&rt, async move {
             // 1. Prepare input and start remote proving.
-            let prepared =
-                <H::Program as ZkVmProgram>::prepare_input::<Host::Input<'_>>(input)
-                    .map_err(|e| ProverError::PermanentFailure(e.to_string()))?;
+            let prepared = <H::Program as ZkVmProgram>::prepare_input::<Host::Input<'_>>(input)
+                .map_err(|e| ProverError::PermanentFailure(e.to_string()))?;
 
             let proof_id = host
                 .start_proving(prepared, H::Program::proof_type())
@@ -122,11 +124,11 @@ where
                         )));
                     }
                     RemoteProofStatus::Requested | RemoteProofStatus::InProgress => {
-                        tokio::time::sleep(poll_interval).await;
+                        sleep(poll_interval).await;
                     }
                     RemoteProofStatus::Unknown => {
                         tracing::warn!(%proof_id, "unknown remote proof status, retrying");
-                        tokio::time::sleep(poll_interval).await;
+                        sleep(poll_interval).await;
                     }
                 }
             }

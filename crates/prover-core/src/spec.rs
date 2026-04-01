@@ -4,6 +4,8 @@
 //! Receipt storage and domain hooks are separate opt-in concerns
 //! (see [`ReceiptStore`](crate::ReceiptStore) and [`ReceiptHook`](crate::ReceiptHook)).
 
+use std::{fmt::Debug, hash::Hash};
+
 use async_trait::async_trait;
 use zkaleido::ZkVmProgram;
 
@@ -32,7 +34,7 @@ use crate::error::ProverResult;
 #[async_trait]
 pub trait ProofSpec: Send + Sync + 'static {
     /// Identifies a unit of work (e.g. `Epoch`, `ChunkTask`).
-    type Task: Clone + std::fmt::Debug + Eq + std::hash::Hash + Send + Sync + 'static;
+    type Task: Clone + Debug + Eq + Hash + Send + Sync + 'static;
 
     /// The zkaleido program to execute. Input must be `Send` for `spawn_blocking`.
     type Program: ZkVmProgram<Input: Send + Sync> + Send + Sync + 'static;

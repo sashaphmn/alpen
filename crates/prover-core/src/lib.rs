@@ -6,21 +6,21 @@
 
 pub mod config;
 pub mod error;
-pub mod spec;
 pub mod prover;
 pub mod receipt;
+pub mod spec;
 pub mod store;
 pub mod strategy;
 pub mod task;
 
 pub use config::{ProverConfig, RetryConfig};
 pub use error::{ProverError, ProverResult};
-pub use spec::ProofSpec;
 pub use prover::{Prover, ProverBuilder};
 pub use receipt::{InMemoryReceiptStore, ReceiptHook, ReceiptStore};
-pub use store::{InMemoryTaskStore, TaskRecord, TaskStore};
+pub use spec::ProofSpec;
 #[cfg(feature = "sled")]
 pub use store::SledTaskStore;
+pub use store::{InMemoryTaskStore, TaskRecord, TaskStore};
 pub use strategy::ProveStrategy;
 pub use task::{TaskResult, TaskStatus};
 pub use zkaleido::{ProofReceiptWithMetadata, ZkVmHost, ZkVmProgram};

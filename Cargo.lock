@@ -13638,9 +13638,9 @@ dependencies = [
 
 [[package]]
 name = "sp1-sdk"
-version = "5.2.4"
+version = "5.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed3ae8bc52d12e8fbfdb10c4c8ce7651af04b63d390c152e6ce43d7744bbaf6f"
+checksum = "2ed77ad8133ef4d915ad55ce700b53cd32a72fc3829ae4ad0fdf4db1982c983a"
 dependencies = [
  "alloy-primitives",
  "alloy-signer",
@@ -16187,7 +16187,7 @@ dependencies = [
  "strata-asm-txs-bridge-v1",
  "strata-bridge-types",
  "strata-cli-common",
- "strata-codec",
+ "strata-codec 0.1.0 (git+https://github.com/alpenlabs/strata-common?tag=v0.1.0-alpha-rc12)",
  "strata-crypto",
  "strata-identifiers",
  "strata-l1-txfmt",
@@ -18548,6 +18548,7 @@ name = "zkaleido"
 version = "0.1.0"
 source = "git+https://github.com/alpenlabs/zkaleido?tag=v0.1.0-alpha-rc22#c084082b8f9e7f62406878313d25b9225f278188"
 dependencies = [
+ "arbitrary",
  "async-trait",
  "bincode",
  "borsh",
@@ -18600,17 +18601,15 @@ dependencies = [
 [[package]]
 name = "zkaleido-sp1-host"
 version = "0.1.0"
-source = "git+https://github.com/alpenlabs/zkaleido?tag=v0.1.0-alpha-rc20#d5b46312a55e8409a08a8437716ca42128e3d085"
+source = "git+https://github.com/alpenlabs/zkaleido?tag=v0.1.0-alpha-rc22#c084082b8f9e7f62406878313d25b9225f278188"
 dependencies = [
  "async-trait",
  "bincode",
- "borsh",
- "hex",
  "serde",
  "sp1-prover",
  "sp1-sdk",
  "sp1-stark",
- "zkaleido 0.1.0 (git+https://github.com/alpenlabs/zkaleido?tag=v0.1.0-alpha-rc20)",
+ "zkaleido 0.1.0 (git+https://github.com/alpenlabs/zkaleido?tag=v0.1.0-alpha-rc22)",
 ]
 
 [[package]]

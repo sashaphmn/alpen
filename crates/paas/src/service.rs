@@ -4,7 +4,7 @@
 //! - **Command-only**: no tick, no retries. Good for one-shot provers.
 //! - **Ticking**: periodic `prover.tick()` for retry scanning and startup recovery.
 
-use std::{sync::Arc, time::Duration};
+use std::{fmt, marker::PhantomData, sync::Arc, time::Duration};
 
 use strata_prover_core::{ProofSpec, Prover, TaskResult};
 use strata_service::{
@@ -22,7 +22,7 @@ use crate::handle::ProverHandle;
 // ============================================================================
 
 #[derive(Debug)]
-pub(crate) enum Cmd<T: Clone + std::fmt::Debug + Send + Sync + 'static> {
+pub(crate) enum Cmd<T: Clone + fmt::Debug + Send + Sync + 'static> {
     Submit {
         task: T,
         completion: CommandCompletionSender<String>,
@@ -41,8 +41,8 @@ pub(crate) struct State<H: ProofSpec> {
     pub(crate) prover: Arc<Prover<H>>,
 }
 
-impl<H: ProofSpec> std::fmt::Debug for State<H> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<H: ProofSpec> fmt::Debug for State<H> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("State").finish()
     }
 }
@@ -91,10 +91,10 @@ async fn handle_cmd<H: ProofSpec>(prover: &Prover<H>, cmd: Cmd<H::Task>) {
 // Mode 1: Commands only (no tick)
 // ============================================================================
 
-pub(crate) struct CmdOnlySvc<H: ProofSpec>(std::marker::PhantomData<H>);
+pub(crate) struct CmdOnlySvc<H: ProofSpec>(PhantomData<H>);
 
-impl<H: ProofSpec> std::fmt::Debug for CmdOnlySvc<H> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<H: ProofSpec> fmt::Debug for CmdOnlySvc<H> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ProverService").finish()
     }
 }
@@ -117,10 +117,7 @@ impl<H: ProofSpec> AsyncService for CmdOnlySvc<H> {
         Ok(())
     }
 
-    async fn process_input(
-        state: &mut Self::State,
-        input: Self::Msg,
-    ) -> anyhow::Result<Response> {
+    async fn process_input(state: &mut Self::State, input: Self::Msg) -> anyhow::Result<Response> {
         handle_cmd(&state.prover, input).await;
         Ok(Response::Continue)
     }
@@ -130,10 +127,10 @@ impl<H: ProofSpec> AsyncService for CmdOnlySvc<H> {
 // Mode 2: Commands + Tick (retries, recovery)
 // ============================================================================
 
-pub(crate) struct TickingSvc<H: ProofSpec>(std::marker::PhantomData<H>);
+pub(crate) struct TickingSvc<H: ProofSpec>(PhantomData<H>);
 
-impl<H: ProofSpec> std::fmt::Debug for TickingSvc<H> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<H: ProofSpec> fmt::Debug for TickingSvc<H> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ProverService(ticking)").finish()
     }
 }
@@ -156,10 +153,7 @@ impl<H: ProofSpec> AsyncService for TickingSvc<H> {
         Ok(())
     }
 
-    async fn process_input(
-        state: &mut Self::State,
-        input: Self::Msg,
-    ) -> anyhow::Result<Response> {
+    async fn process_input(state: &mut Self::State, input: Self::Msg) -> anyhow::Result<Response> {
         match input {
             TickMsg::Msg(cmd) => handle_cmd(&state.prover, cmd).await,
             TickMsg::Tick => {
@@ -228,8 +222,8 @@ impl<H: ProofSpec> ProverServiceBuilder<H> {
     }
 }
 
-impl<H: ProofSpec> std::fmt::Debug for ProverServiceBuilder<H> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<H: ProofSpec> fmt::Debug for ProverServiceBuilder<H> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ProverServiceBuilder").finish()
     }
 }

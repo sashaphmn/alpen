@@ -103,6 +103,27 @@ Two built-in strategies:
   `start_proving` → poll `get_status` → `get_proof` cycle for backends like the
   SP1 network.
 
+### Adding a new host (e.g. RISC0 remote, custom backend)
+
+Adding a new proving backend doesn't require touching prover-core at all — it's
+entirely a zkaleido concern. The steps:
+
+1. **Implement `ZkVmHost`** in zkaleido for local execution, or `ZkVmRemoteHost`
+   for an async remote backend. This is where the actual zkVM integration lives:
+   input preparation, proof generation, status polling, receipt retrieval.
+2. **Pass it to the builder** — `.native(your_host)` or `.remote(your_host)`.
+   That's it. prover-core erases the host type behind a `ProveStrategy` and the
+   rest of the system (specs, task lifecycle, PaaS) is completely unaware.
+
+For example, a RISC0 remote prover would implement `ZkVmRemoteHost` with
+`start_proving` submitting to Bonsai, `get_status` polling the Bonsai API, and
+`get_proof` downloading the receipt. The consumer code and PaaS wiring stay identical
+— only the `.remote(risc0_bonsai_host)` builder call changes.
+
+If neither built-in strategy fits (e.g. a backend with a fundamentally different
+execution model), you can implement `ProveStrategy<S>` directly and pass it to
+`ProverBuilder::build()`.
+
 ### Task lifecycle
 
 Every task moves through a simple state machine:

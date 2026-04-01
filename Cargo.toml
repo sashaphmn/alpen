@@ -262,7 +262,6 @@ strata-ol-stf = { path = "crates/ol/stf" }
 strata-open-rpc = { path = "crates/rpc/open-rpc" }
 strata-open-rpc-macros = { path = "crates/rpc/open-rpc-macros" }
 strata-paas = { path = "crates/paas" }
-strata-prover-core = { path = "crates/prover-core" }
 strata-params = { path = "crates/params" }
 strata-primitives = { path = "crates/primitives" }
 strata-proofimpl-alpen-acct = { path = "crates/proof-impl/alpen-acct" }
@@ -271,6 +270,7 @@ strata-proofimpl-checkpoint = { path = "crates/proof-impl/checkpoint" }
 strata-proofimpl-checkpoint-new = { path = "crates/proof-impl/checkpoint-new" }
 strata-proofimpl-evm-ee-stf = { path = "crates/proof-impl/evm-ee-stf" }
 strata-prover-client-rpc-api = { path = "crates/rpc/prover-client-api" }
+strata-prover-core = { path = "crates/prover-core" }
 strata-rpc-api = { path = "crates/rpc/api" }
 strata-rpc-types = { path = "crates/rpc/types" }
 strata-rpc-utils = { path = "crates/rpc/utils" }
@@ -314,7 +314,9 @@ moho-runtime-interface = { git = "https://github.com/alpenlabs/moho" }
 moho-types = { git = "https://github.com/alpenlabs/moho" }
 
 # zkaleido
-zkaleido = { git = "https://github.com/alpenlabs/zkaleido", tag = "v0.1.0-alpha-rc22" }
+zkaleido = { git = "https://github.com/alpenlabs/zkaleido", features = [
+  "arbitrary",
+], tag = "v0.1.0-alpha-rc22" }
 zkaleido-native-adapter = { git = "https://github.com/alpenlabs/zkaleido", tag = "v0.1.0-alpha-rc22" }
 zkaleido-sp1-groth16-verifier = { git = "https://github.com/alpenlabs/zkaleido", tag = "v0.1.0-alpha-rc22" }
 

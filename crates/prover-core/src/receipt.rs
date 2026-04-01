@@ -4,13 +4,12 @@
 //! - [`ReceiptStore`]: generic UUID-keyed persistence. Enables `get_receipt` on the PaaS handle.
 //! - [`ReceiptHook`]: domain-specific side effects after proving (e.g. write to ProofDB by epoch).
 
+use std::{collections::HashMap, sync::RwLock};
+
 use async_trait::async_trait;
 use zkaleido::ProofReceiptWithMetadata;
 
-use crate::{
-    error::ProverResult,
-    spec::ProofSpec,
-};
+use crate::{error::ProverResult, spec::ProofSpec};
 
 /// Generic receipt persistence keyed by task UUID.
 ///
@@ -41,7 +40,7 @@ pub trait ReceiptHook<H: ProofSpec>: Send + Sync + 'static {
 /// In-memory receipt store for tests and dev.
 #[derive(Debug, Default)]
 pub struct InMemoryReceiptStore {
-    receipts: std::sync::RwLock<std::collections::HashMap<String, ProofReceiptWithMetadata>>,
+    receipts: RwLock<HashMap<String, ProofReceiptWithMetadata>>,
 }
 
 impl InMemoryReceiptStore {

@@ -239,8 +239,7 @@ pub(crate) fn start_strata_services(
     );
 
     if is_sequencer {
-        let fcm_ctx =
-            FcmContext::from_node_ctx(&nodectx, chain_worker_handle, csm_monitor);
+        let fcm_ctx = FcmContext::from_node_ctx(&nodectx, chain_worker_handle, csm_monitor);
         let fcm_handle = nodectx
             .task_manager()
             .handle()

@@ -48,12 +48,13 @@ fn main() -> Result<()> {
         .map_err(InitError::RuntimeBuild)?;
 
     // Install Prometheus metrics recorder before logging so the MetricsLayer
-    // can record from the very first spans.
+    // can record from the very first spans.  Bind to loopback only — operators
+    // who need remote scraping can front it with a reverse proxy.
     if let Some(port) = config.logging.metrics_port {
         metrics_exporter_prometheus::PrometheusBuilder::new()
-            .with_http_listener(([0, 0, 0, 0], port))
+            .with_http_listener(([127, 0, 0, 1], port))
             .install()
-            .expect("failed to install Prometheus metrics exporter");
+            .map_err(|e| anyhow!("failed to install Prometheus metrics exporter: {e}"))?;
     }
 
     // Initialize logging (MetricsLayer is only added when a recorder is installed).

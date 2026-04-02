@@ -15899,7 +15899,6 @@ dependencies = [
  "argh",
  "bitcoin",
  "jsonrpsee",
- "rand 0.8.5",
  "serde",
  "strata-common",
  "strata-crypto",

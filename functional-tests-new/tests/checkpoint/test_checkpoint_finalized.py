@@ -8,7 +8,6 @@ import flexitest
 
 from common.base_test import StrataNodeTest
 from common.config import ServiceType
-from tests.checkpoint.helpers import mine_until_finalized_epoch
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,6 @@ class TestCheckpointFinalized(StrataNodeTest):
         strata_rpc = strata.wait_for_rpc_ready(timeout=20)
 
         btc_rpc = bitcoin.create_rpc()
-        mine_addr = btc_rpc.proxy.getnewaddress()
 
         # Get initial sync status
         initial_status = strata.get_sync_status(strata_rpc)
@@ -41,15 +39,8 @@ class TestCheckpointFinalized(StrataNodeTest):
         epochs_to_check = 3
 
         for target_epoch in range(1, epochs_to_check + 1):
-            epoch = mine_until_finalized_epoch(
-                btc_rpc=btc_rpc,
-                strata=strata,
-                strata_rpc=strata_rpc,
-                mine_addr=mine_addr,
-                target_epoch=target_epoch,
-                timeout=120,
-                step=1.0,
-            )
+            status = strata.wait_until_checkpoint_finalized(target_epoch, btc_rpc)
+            epoch = status["finalized"]
             logger.info("finalized epoch advanced to %s", epoch["epoch"])
 
         return True

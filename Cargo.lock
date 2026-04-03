@@ -13821,7 +13821,6 @@ dependencies = [
  "strata-btcio",
  "strata-chain-worker-new",
  "strata-checkpoint-types",
- "strata-checkpoint-types-ssz",
  "strata-codec",
  "strata-codec-utils",
  "strata-common",

@@ -33,8 +33,7 @@ use crate::{
     mmr_index::{LeafPos, MmrBatchWrite, MmrNodePos, MmrNodeTable, NodePos},
     types::{
         AccountExtraDataEntry, BundledPayloadEntry, ChunkedEnvelopeEntry, IntentEntry,
-        L1PayloadIntentIndex, L1TxEntry, MempoolTxData, OLCheckpointL1ObservationEntry,
-        SerializableTaskId, SerializableTaskRecord,
+        L1PayloadIntentIndex, L1TxEntry, MempoolTxData, SerializableTaskId, SerializableTaskRecord,
     },
     DbResult, RawMmrId,
 };

@@ -17,8 +17,8 @@ use strata_config::{
 use strata_csm_types::{ClientState, ClientUpdateOutput, L1Status};
 use strata_node_context::NodeContext;
 use strata_ol_params::OLParams;
-use strata_primitives::OLBlockCommitment;
 use strata_params::{Params, RollupParams, SyncParams};
+use strata_primitives::OLBlockCommitment;
 use strata_status::StatusChannel;
 use strata_storage::{NodeStorage, create_node_storage};
 use tokio::runtime::Handle;
@@ -272,18 +272,21 @@ fn init_status_channel(
     Ok(StatusChannel::new(cur_state, cur_block, l1_status, None, None).into())
 }
 
-/// Ensures CL and OL genesis. Returns the genesis block commitment.
+/// Ensures client state and OL genesis. Returns the genesis block commitment.
 pub(crate) fn ensure_genesis(
     storage: &NodeStorage,
     ol_params: &OLParams,
 ) -> Result<OLBlockCommitment, InitError> {
     let commitment = ensure_ol_genesis(storage, ol_params)?;
-    ensure_cl_genesis(storage, ol_params)?;
+    ensure_client_state_genesis(storage, ol_params)?;
     Ok(commitment)
 }
 
 /// Ensures client state genesis.
-fn ensure_cl_genesis(storage: &NodeStorage, ol_params: &OLParams) -> Result<(), InitError> {
+fn ensure_client_state_genesis(
+    storage: &NodeStorage,
+    ol_params: &OLParams,
+) -> Result<(), InitError> {
     // Check for client state genesis
     let csman = storage.client_state();
     let recent_state = csman
@@ -317,7 +320,7 @@ fn ensure_ol_genesis(
             Ok(commitment)
         }
         Some(commitment) => {
-            info!(%commitment, "Genesis block found, no need for genesis");
+            info!(%commitment, "Genesis block found, no need to do OL genesis");
             Ok(commitment)
         }
     }

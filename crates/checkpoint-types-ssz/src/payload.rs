@@ -91,21 +91,6 @@ impl TerminalHeaderComplement {
     pub fn compute_hash(&self) -> FixedBytes<32> {
         FixedBytes::<32>::from(TreeHash::<Sha256Hasher>::tree_hash_root(self).0)
     }
-
-    /// Creates an `OLBlockHeader`.
-    pub fn to_full_header(&self, epoch: EpochCommitment, state_root: Buf32) -> OLBlockHeader {
-        // TODO: recheck the logic here
-        OLBlockHeader {
-            timestamp: self.timestamp(),
-            flags: BlockFlags::new_terminal(),
-            slot: epoch.last_slot,
-            epoch: epoch.epoch,
-            parent_blkid: *self.parent_blkid(),
-            body_root: *self.body_root(),
-            state_root,
-            logs_root: *self.logs_root(),
-        }
-    }
 }
 
 impl CheckpointSidecar {

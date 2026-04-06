@@ -7,10 +7,12 @@ use std::sync::Arc;
 
 use async_trait::async_trait;
 use strata_asm_common::AsmManifest;
+use strata_checkpoint_types::EpochSummary;
+use strata_csm_types::CheckpointL1Ref;
 use strata_db_types::{types::AccountExtraDataEntry, DbResult};
 use strata_identifiers::{AccountId, Epoch, L1Height, OLBlockId, OLTxId};
-use strata_ol_chain_types_new::OLBlock;
-use strata_ol_mempool::{OLMempoolResult, OLMempoolTransaction};
+use strata_ol_chain_types_new::{OLBlock, OLTransaction};
+use strata_ol_mempool::OLMempoolResult;
 use strata_ol_state_types::OLState;
 use strata_primitives::{epoch::EpochCommitment, nonempty_vec::NonEmptyVec, OLBlockCommitment};
 use strata_status::OLSyncStatus;
@@ -33,11 +35,23 @@ pub trait OLRpcProvider: Send + Sync + 'static {
         commitment: OLBlockCommitment,
     ) -> DbResult<Option<Arc<OLState>>>;
 
-    /// Get the canonical epoch commitment for the given epoch index.
+    /// Get the canonical epoch commitment for the given epoch.
     async fn get_canonical_epoch_commitment_at(
         &self,
         epoch: u64,
     ) -> DbResult<Option<EpochCommitment>>;
+
+    /// Get OL epoch summary by epoch commitment.
+    async fn get_epoch_summary(
+        &self,
+        commitment: EpochCommitment,
+    ) -> DbResult<Option<EpochSummary>>;
+
+    /// Get OL checkpoint L1 ref by epoch commitment.
+    async fn get_checkpoint_l1_ref(
+        &self,
+        commitment: EpochCommitment,
+    ) -> DbResult<Option<CheckpointL1Ref>>;
 
     /// Get extra data entries for an account at a given epoch.
     async fn get_account_extra_data(
@@ -55,6 +69,9 @@ pub trait OLRpcProvider: Send + Sync + 'static {
     /// Get current OL chain sync status.
     fn get_ol_sync_status(&self) -> Option<OLSyncStatus>;
 
+    /// Get current L1 tip height.
+    fn get_l1_tip_height(&self) -> Option<L1Height>;
+
     /// Submit a transaction to the mempool.
-    async fn submit_transaction(&self, tx: OLMempoolTransaction) -> OLMempoolResult<OLTxId>;
+    async fn submit_transaction(&self, tx: OLTransaction) -> OLMempoolResult<OLTxId>;
 }

@@ -111,7 +111,7 @@ jobs:
           rustup default "$RUST_NIGHTLY"
 
       - name: Rust cache
-        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2
         with:
           # All parallel jobs share the same cache to maximize hits
           shared-key: functional-tests-pr
@@ -171,7 +171,7 @@ jobs:
 
       - name: Upload logs as build artifact on failure
         if: failure()
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4
         with:
           name: logs-${{ steps.sanitize.outputs.name }}
           path: logs.zip
@@ -235,7 +235,7 @@ jobs:
           tool: cargo-llvm-cov
 
       - name: Rust cache
-        uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5 # v2
+        uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2
         with:
           # Separate cache for coverage builds (different RUSTFLAGS produce different artifacts)
           shared-key: functional-tests-coverage
@@ -286,7 +286,7 @@ jobs:
       - name: Upload coverage lcov artifact
         if: hashFiles('lcov.functional.info') != ''
         continue-on-error: true
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4
         with:
           name: functional-lcov
           path: lcov.functional.info
@@ -304,7 +304,7 @@ jobs:
 
       - name: Upload logs as build artifact on failure
         if: steps.funcTestsRun2.outcome == 'failure'
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v4
         with:
           name: fntest_dd
           path: logs.zip

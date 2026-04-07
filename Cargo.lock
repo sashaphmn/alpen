@@ -15406,6 +15406,7 @@ dependencies = [
  "strata-checkpoint-types-ssz",
  "strata-codec",
  "strata-codec-utils",
+ "strata-common",
  "strata-crypto",
  "strata-csm-types",
  "strata-db-types",

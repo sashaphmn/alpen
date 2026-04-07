@@ -3,10 +3,9 @@
 use ssz_primitives::FixedBytes;
 use ssz_types::VariableList;
 use strata_identifiers::{
-    Buf32, Epoch, EpochCommitment, OLBlockCommitment, OLBlockId, impl_borsh_via_ssz,
-    impl_borsh_via_ssz_fixed,
+    Buf32, Epoch, OLBlockCommitment, OLBlockId, impl_borsh_via_ssz, impl_borsh_via_ssz_fixed,
 };
-use strata_ol_chain_types_new::{BlockFlags, OLBlockHeader, OLLog};
+use strata_ol_chain_types_new::{OLBlockHeader, OLLog};
 use tree_hash::{Sha256Hasher, TreeHash};
 
 use crate::{

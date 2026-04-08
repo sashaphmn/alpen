@@ -68,11 +68,12 @@ impl AsmLog for CheckpointUpdate {
     const TY: TypeId = CHECKPOINT_UPDATE_LOG_TYPE;
 }
 
-/// Records a verified [`CheckpointTip`] update from the v1 checkpoint subprotocol.
+/// V1 checkpoint tip update log emitted by the main checkpoint subprotocol.
 ///
-/// Carries the tip (epoch, L1 height, L2 commitment) and the txid of the L1
-/// transaction that delivered the checkpoint tx. The inner [`CheckpointTip`]
-/// is encoded via [`CodecSsz`] per its SSZ schema.
+/// Records a verified [`CheckpointTip`] together with the L1 transaction ID
+/// that carried the checkpoint proof.
+///
+/// The inner [`CheckpointTip`] is encoded via [`CodecSsz`] according to its SSZ schema.
 #[derive(Debug, Clone, Codec)]
 pub struct CheckpointTipUpdate {
     /// The new verified checkpoint tip.
